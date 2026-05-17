@@ -73,14 +73,24 @@ bun build --compile --outfile redis-tool index.ts
 
 ```
 
-**Using the compiled binary:**
+#### Making it Globally Available (macOS / Linux)
+
+If you want to run `redis-tool` from any directory on your machine without needing the `./` prefix, you can move the compiled binary to your `/usr/local/bin` folder:
 
 ```bash
-./redis-tool write myapp test "hello world"
-./redis-tool write myapp exp_test "hello" 60
-./redis-tool read myapp test
-./redis-tool delete myapp test
-./redis-tool list myapp
+sudo mv redis-tool /usr/local/bin/
+
+```
+
+**Using the compiled binary:**
+Once compiled (and optionally moved to your bin folder), you can use it like this:
+
+```bash
+redis-tool write myapp test "hello world"
+redis-tool write myapp exp_test "hello" 60
+redis-tool read myapp test
+redis-tool delete myapp test
+redis-tool list myapp
 
 ```
 
@@ -92,7 +102,7 @@ Because `redis-tool` automatically detects when it is not running in a TTY termi
 
 ```typescript
 async function readValue() {
-  const readProc = Bun.spawn(["./redis-tool", "read", "myapp", "test"]);
+  const readProc = Bun.spawn(["redis-tool", "read", "myapp", "test"]);
   const output = await new Response(readProc.stdout).text();
   console.log("Read from subprocess:", output); 
 }
@@ -104,7 +114,7 @@ When you use the `list` command as a subprocess, it outputs the keys separated b
 
 ```typescript
 async function listKeys() {
-  const listProc = Bun.spawn(["./redis-tool", "list", "myapp"]);
+  const listProc = Bun.spawn(["redis-tool", "list", "myapp"]);
   const output = await new Response(listProc.stdout).text();
   
   // Split the raw string into a clean array of keys
@@ -117,4 +127,4 @@ async function listKeys() {
 ## How it Works (Namespaces)
 
 When you provide a namespace and a key, the tool automatically joins them with a colon (`:`).
-For example, running `./redis-tool write cache user_1 "Alice"` will execute `SET cache:user_1 "Alice"` under the hood. If you provide a TTL of 60, it will follow up with an `EXPIRE cache:user_1 60` command. Similarly, `./redis-tool list cache` executes a `KEYS cache:*` pattern match to find all relevant records.
+For example, running `redis-tool write cache user_1 "Alice"` will execute `SET cache:user_1 "Alice"` under the hood. If you provide a TTL of 60, it will follow up with an `EXPIRE cache:user_1 60` command. Similarly, `redis-tool list cache` executes a `KEYS cache:*` pattern match to find all relevant records.
