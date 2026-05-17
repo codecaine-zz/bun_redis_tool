@@ -5,6 +5,7 @@ node_modules
 out
 dist
 *.tgz
+redis_tool
 
 # code coverage
 coverage
