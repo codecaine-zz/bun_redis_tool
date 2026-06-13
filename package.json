@@ -1,8 +1,12 @@
 {
   "name": "bun_redis_tool",
-  "module": "index.ts",
+  "module": "redis_tool.ts",
   "type": "module",
   "private": true,
+  "scripts": {
+    "build": "bun build ./redis_tool.ts --outfile=./dist/redis_tool.js --target=bun",
+    "compile": "bun build --compile --outfile redis-tool redis_tool.ts"
+  },
   "devDependencies": {
     "@types/bun": "latest"
   },
