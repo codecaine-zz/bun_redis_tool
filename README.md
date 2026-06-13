@@ -42,34 +42,95 @@ This compiles the tool into the standalone executable `redis-tool`.
 
 ## Usage as an Importable Module
 
-You can import `RedisTool` from the bundled single-file build in any other Bun runtime file:
+You can import `RedisTool` from the bundled single-file build in any other Bun runtime file. Below are comprehensive examples covering everything the module can do.
+
+### 1. Initialization and Connection Modes
+
+The `RedisTool` class is highly flexible. It accepts the namespace as the first argument, and optionally a Redis client configuration or existing instance as the second argument:
 
 ```typescript
 import { RedisTool } from "./dist/redis_tool.js";
+import { RedisClient } from "bun";
 
-// Instantiate RedisTool with a specific namespace ("cache")
-const cache = new RedisTool("cache"); // connects to REDIS_URL or localhost:6379
+// Mode A: Connect using default configuration (uses REDIS_URL environment variable or localhost:6379)
+const cache = new RedisTool("cache");
 
-// Write a value with 60 seconds TTL
-await cache.write("session_id", "xyz_12345", 60);
+// Mode B: Connect to a custom Redis URL string
+const db = new RedisTool("users", "redis://:my-secret-password@redis-host:6379");
 
-// Read the value
-const value = await cache.read("session_id");
-console.log("Session:", value); // "xyz_12345"
+// Mode C: Reuse an existing client connection (ideal for multiple namespaces to avoid opening extra socket connections)
+const sharedClient = new RedisClient();
+const sessions = new RedisTool("session", sharedClient);
+const metrics = new RedisTool("metric", sharedClient);
+```
 
-// List all keys in the namespace
-const keys = await cache.list();
-console.log("Keys:", keys); // ["cache:session_id"]
+### 2. Reading and Writing Data
 
-// Delete all keys in the namespace (Clear)
-const deletedCount = await cache.clear();
-console.log(`Deleted ${deletedCount} key(s)`);
+The tool automatically prefixes keys with the namespace (e.g. `namespace:key`).
 
-// Delete a single key
-await cache.delete("session_id");
+```typescript
+// A. Write a persistent value (string)
+await cache.write("theme", "dark");
 
-// Close the connection
+// B. Read a value (returns string or null if key does not exist)
+const theme = await cache.read("theme"); // "dark"
+const missing = await cache.read("nonexistent"); // null
+
+// C. Storing and retrieving JSON objects
+const userObj = { id: 42, name: "Alice", roles: ["admin"] };
+await cache.write("user_42", JSON.stringify(userObj));
+
+const rawUser = await cache.read("user_42");
+if (rawUser) {
+  const user = JSON.parse(rawUser);
+  console.log(user.name); // "Alice"
+}
+```
+
+### 3. Expiration and TTL (Time-To-Live)
+
+You can specify a TTL in seconds when writing a key.
+
+```typescript
+// Write a key that automatically expires after 10 minutes (600 seconds)
+await cache.write("temp_token", "abc123xyz", 600);
+```
+
+### 4. Listing Keys
+
+You can query all keys belonging to the current namespace.
+
+```typescript
+// Set some keys
+await cache.write("key_a", "val_a");
+await cache.write("key_b", "val_b");
+
+// List all keys (returns string[] of matching keys, including namespace prefix)
+const allKeys = await cache.list();
+console.log(allKeys); // ["cache:key_a", "cache:key_b"]
+```
+
+### 5. Deleting Data
+
+```typescript
+// A. Delete a single key (returns number of keys deleted: 1 if deleted, 0 if it didn't exist)
+const deletedCount = await cache.delete("key_a"); // 1
+const deleteNonexistent = await cache.delete("key_a"); // 0
+
+// B. Delete ALL keys within the namespace (Clear)
+// This finds all keys matching "namespace:*" and deletes them at once
+const clearedCount = await cache.clear();
+console.log(`Cleared ${clearedCount} namespace keys`);
+```
+
+### 6. Closing Connections
+
+Always clean up connections once you are done using the client:
+
+```typescript
 cache.close();
+// Note: If you passed an existing RedisClient to the constructor,
+// calling close() on RedisTool will also close that shared client.
 ```
 
 ## CLI Usage
