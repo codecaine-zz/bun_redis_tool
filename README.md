@@ -20,6 +20,20 @@ By default, Bun's Redis client will attempt to connect to `redis://localhost:637
 export REDIS_URL="redis://username:password@your-redis-host:6379"
 ```
 
+## Installation
+
+Install the package in your project using Bun:
+
+```bash
+bun add bun-redis-tool
+```
+
+Or with npm:
+
+```bash
+npm install bun-redis-tool
+```
+
 ## Compilation & Bundling
 
 You can compile and bundle the tool in two different formats:
@@ -42,14 +56,14 @@ This compiles the tool into the standalone executable `redis-tool`.
 
 ## Usage as an Importable Module
 
-You can import `RedisTool` from the bundled single-file build in any other Bun runtime file. Below are comprehensive examples covering everything the module can do.
+You can import `RedisTool` from `bun-redis-tool` in any other Bun runtime file. Below are comprehensive examples covering everything the module can do.
 
 ### 1. Initialization and Connection Modes
 
 The `RedisTool` class is highly flexible. It accepts the namespace as the first argument, and optionally a Redis client configuration or existing instance as the second argument:
 
 ```typescript
-import { RedisTool } from "./dist/redis_tool.js";
+import { RedisTool } from "bun-redis-tool";
 import { RedisClient } from "bun";
 
 // Mode A: Connect using default configuration (uses REDIS_URL environment variable or localhost:6379)

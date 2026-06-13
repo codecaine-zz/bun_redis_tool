@@ -1,8 +1,15 @@
 {
-  "name": "bun_redis_tool",
-  "module": "redis_tool.ts",
+  "name": "bun-redis-tool",
+  "version": "1.0.0",
+  "description": "A lightweight, namespaced Redis client tool built for Bun runtime environments",
+  "main": "dist/redis_tool.js",
+  "module": "dist/redis_tool.js",
+  "types": "redis_tool.ts",
+  "files": [
+    "dist",
+    "redis_tool.ts"
+  ],
   "type": "module",
-  "private": true,
   "scripts": {
     "build": "bun build ./redis_tool.ts --outfile=./dist/redis_tool.js --target=bun",
     "compile": "bun build --compile --outfile redis-tool redis_tool.ts"
