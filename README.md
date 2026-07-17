@@ -3,6 +3,7 @@
 A lightweight, high-performance utility for reading, writing, deleting, and listing keys in Redis using namespaces. Built on top of the official [redis npm package](https://www.npmjs.com/package/redis) to ensure compatibility across both **Node.js** and **Bun** runtime environments.
 
 This tool is designed to be multi-purpose:
+
 1. **Console App:** Provides clean, human-readable output in your terminal when run directly.
 2. **Subprocess:** Outputs exact raw strings (without extra newlines or formatting) when spawned by another application, making it perfectly suited for inter-process communication.
 3. **Importable Module:** Can be imported directly into other Node.js or Bun projects with full TypeScript and ES Module / CommonJS support.
@@ -41,6 +42,7 @@ To bundle the package:
 ```bash
 bun run build
 ```
+
 This uses `tsup` under the hood to compile and bundle the source code into CommonJS (`dist/index.cjs`), ESM (`dist/index.js`), and type definitions (`dist/index.d.ts`).
 
 ## Usage as an Importable Module
@@ -58,15 +60,18 @@ import { RedisTool } from "bun-redis-tool";
 const cache = new RedisTool("cache");
 
 // Mode B: Connect to a custom Redis URL string
-const db = new RedisTool("users", "redis://:my-secret-password@redis-host:6379");
+const db = new RedisTool(
+  "users",
+  "redis://:my-secret-password@redis-host:6379",
+);
 
 // Mode C: Reuse an existing node-redis client connection
 const sharedClient = new RedisTool("shared");
 const sessions = new RedisTool("session", sharedClient);
 const metrics = new RedisTool("metric", sharedClient);
 
-sessions.write("name",'james', 10)
-sessions.read("name").then(x => console.log(x))
+sessions.write("name", "james", 10);
+sessions.read("name").then((x) => console.log(x));
 ```
 
 ### 2. Reading and Writing Data
@@ -87,7 +92,7 @@ await cache.write("user_42", JSON.stringify(userObj));
 
 const rawUser = await cache.read("user_42");
 if (rawUser) {
-  const user = JSON.parse(rawUser);
+  const user = await new Response(rawUser).json();
   console.log(user.name); // "Alice"
 }
 ```
@@ -146,7 +151,7 @@ When installed globally or inside a project, you can use the CLI via `npx` or `b
 
 `npx bun-redis-tool [action] [namespace] [key] [value] [ttl_in_seconds]`
 
-*(Notes: The `key` is optional for `list` and `clear`. The `value` is required for `write`. The `ttl_in_seconds` is optional for `write`.)*
+_(Notes: The `key` is optional for `list` and `clear`. The `value` is required for `write`. The `ttl_in_seconds` is optional for `write`.)_
 
 **Write a persistent value:**
 
@@ -192,9 +197,15 @@ Because the CLI automatically detects when it is not running in a TTY terminal, 
 
 ```typescript
 async function readValue() {
-  const readProc = Bun.spawn(["npx", "bun-redis-tool", "read", "myapp", "test"]);
+  const readProc = Bun.spawn([
+    "npx",
+    "bun-redis-tool",
+    "read",
+    "myapp",
+    "test",
+  ]);
   const output = await new Response(readProc.stdout).text();
-  console.log("Read from subprocess:", output); 
+  console.log("Read from subprocess:", output);
 }
 ```
 
