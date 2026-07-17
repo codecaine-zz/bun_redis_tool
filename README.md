@@ -53,7 +53,6 @@ The `RedisTool` class accepts a namespace as the first argument, and optionally 
 
 ```typescript
 import { RedisTool } from "bun-redis-tool";
-import { createClient } from "redis";
 
 // Mode A: Connect using default configuration (uses REDIS_URL environment variable or localhost:6379)
 const cache = new RedisTool("cache");
@@ -62,9 +61,12 @@ const cache = new RedisTool("cache");
 const db = new RedisTool("users", "redis://:my-secret-password@redis-host:6379");
 
 // Mode C: Reuse an existing node-redis client connection
-const sharedClient = createClient();
+const sharedClient = new RedisTool("shared");
 const sessions = new RedisTool("session", sharedClient);
 const metrics = new RedisTool("metric", sharedClient);
+
+sessions.write("name",'james', 10)
+sessions.read("name").then(x => console.log(x))
 ```
 
 ### 2. Reading and Writing Data
